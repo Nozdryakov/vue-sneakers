@@ -1,9 +1,15 @@
 <template>
-  <div class="bg-white w-4/5 m-auto h-screen rounded-xl shadow-xl mt-14">
+  <div class="bg-white w-4/5 m-auto rounded-xl shadow-xl mt-14">
   <Header></Header>
-    <h1>Sneakers</h1>
+
+    <div class="p-10">
+      <h2 class="text-3xl font-bold mb-8">Все кроссовки</h2>
+      <card-list></card-list>
+    </div>
   </div>
 </template>
 <script setup>
 import Header from "@/components/Header.vue";
+import Card from "@/components/Card.vue";
+import CardList from "@/components/CardList.vue";
 </script>
