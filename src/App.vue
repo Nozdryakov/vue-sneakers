@@ -1,7 +1,7 @@
 <template>
-  <!--  <drawer></drawer>-->
+  <drawer v-if="cartOpen"></drawer>
   <div class="bg-white w-4/5 m-auto rounded-xl shadow-xl mt-14">
-    <Header></Header>
+    <Header @openDrawer="openDrawer"></Header>
 
     <div class="p-10">
       <div class="flex justify-between items-center">
@@ -22,36 +22,128 @@
       </div>
 
       <div class="mt-10">
-        <card-list :items="filteredItems"></card-list>
+        <card-list :items="filteredItems" @updateCart="updateCart"  @addToFavorite="addToFavorite"></card-list>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import {ref, computed, provide, onMounted, watchEffect, watch} from 'vue';
 import Header from "@/components/Header.vue";
 import CardList from "@/components/CardList.vue";
+import { useCookies } from "vue3-cookies";
 import Drawer from "@/components/Drawer.vue";
 
+const cartOpen = ref(false);
+const closeDrawer = () => {
+  cartOpen.value = false;
+}
+const openDrawer = () => {
+  cartOpen.value = true;
+  console.log(cartOpen.value);
+}
 const items = ref([
-  { id: 1, title: "Мужские Кроссовки Nike Blazer Mid Suede", price: 12999, imageUrl: "/sneakers/sneakers-1.jpg" },
-  { id: 2, title: "Мужские Кроссовки Nike Air Max 270", price: 15600, imageUrl: "/sneakers/sneakers-2.jpg" },
-  { id: 3, title: "Мужские Кроссовки Nike Blazer Mid Suede", price: 8499, imageUrl: "/sneakers/sneakers-3.jpg" },
-  { id: 4, title: "Кроссовки Puma X Aka Boku Future Rider", price: 7800, imageUrl: "/sneakers/sneakers-4.jpg" },
-  { id: 5, title: "Кроссовки Future Rider", price: 9550, imageUrl: "/sneakers/sneakers-5.jpg" },
-  { id: 6, title: "Кроссовки Black Edition", price: 16999, imageUrl: "/sneakers/sneakers-6.jpg" },
-  { id: 7, title: "Кроссовки Orange Boomb Edition", price: 7499, imageUrl: "/sneakers/sneakers-7.jpg" },
-  { id: 8, title: "Кроссовки Nike Air Max 270", price: 15600, imageUrl: "/sneakers/sneakers-8.jpg" },
-  { id: 9, title: "Кроссовки Nike Air Force 1", price: 5900, imageUrl: "/sneakers/sneakers-9.jpg" },
-  { id: 10, title: "Кроссовки Adidas Ultraboost", price: 11500, imageUrl: "/sneakers/sneakers-10.jpg" },
-  { id: 11, title: "Кроссовки Puma Clyde All-Pro", price: 7600, imageUrl: "/sneakers/sneakers-11.jpg" },
-  { id: 12, title: "Кроссовки Converse Chuck Taylor All-Star", price: 13000, imageUrl: "/sneakers/sneakers-12.jpg" }
+  {
+    id: 1,
+    title: "Мужские Кроссовки Nike Blazer Mid Suede",
+    price: 12999,
+    imageUrl: "/sneakers/sneakers-1.jpg",
+    isFavorite: false,
+    isAdded: false
+  },
+  {
+    id: 2,
+    title: "Мужские Кроссовки Nike Air Max 270",
+    price: 15600,
+    imageUrl: "/sneakers/sneakers-2.jpg",
+    isFavorite: false,
+    isAdded: false
+  },
+  {
+    id: 3,
+    title: "Мужские Кроссовки Nike Blazer Mid Suede",
+    price: 8499,
+    imageUrl: "/sneakers/sneakers-3.jpg",
+    isFavorite: false,
+    isAdded: false
+  },
+  {
+    id: 4,
+    title: "Кроссовки Puma X Aka Boku Future Rider",
+    price: 7800,
+    imageUrl: "/sneakers/sneakers-4.jpg",
+    isFavorite: false,
+    isAdded: false
+  },
+  {
+    id: 5,
+    title: "Кроссовки Future Rider",
+    price: 9550,
+    imageUrl: "/sneakers/sneakers-5.jpg",
+    isFavorite: false,
+    isAdded: false
+  },
+  {
+    id: 6,
+    title: "Кроссовки Black Edition",
+    price: 16999,
+    imageUrl: "/sneakers/sneakers-6.jpg",
+    isFavorite: false,
+    isAdded: false
+  },
+  {
+    id: 7,
+    title: "Кроссовки Orange Boomb Edition",
+    price: 7499,
+    imageUrl: "/sneakers/sneakers-7.jpg",
+    isFavorite: false,
+    isAdded: false
+  },
+  {
+    id: 8,
+    title: "Кроссовки Nike Air Max 270",
+    price: 15600,
+    imageUrl: "/sneakers/sneakers-8.jpg",
+    isFavorite: false,
+    isAdded: false
+  },
+  {
+    id: 9,
+    title: "Кроссовки Nike Air Force 1",
+    price: 5900,
+    imageUrl: "/sneakers/sneakers-9.jpg",
+    isFavorite: false,
+    isAdded: false
+  },
+  {
+    id: 10,
+    title: "Кроссовки Adidas Ultraboost",
+    price: 11500,
+    imageUrl: "/sneakers/sneakers-10.jpg",
+    isFavorite: false,
+    isAdded: false
+  },
+  {
+    id: 11,
+    title: "Кроссовки Puma Clyde All-Pro",
+    price: 7600,
+    imageUrl: "/sneakers/sneakers-11.jpg",
+    isFavorite: false,
+    isAdded: false
+  },
+  {
+    id: 12,
+    title: "Кроссовки Converse Chuck Taylor All-Star",
+    price: 13000,
+    imageUrl: "/sneakers/sneakers-12.jpg",
+    isFavorite: false,
+    isAdded: false
+  }
 ]);
 
 const sortKey = ref('title');
 const searchQuery = ref('');
-
 const sortedItems = computed(() => {
   let sorted = [...items.value];
   if (sortKey.value === 'title') {
@@ -71,5 +163,119 @@ const filteredItems = computed(() => {
 const sortItems = (event) => {
   sortKey.value = event.target.value;
 };
-</script>
 
+const { cookies } = useCookies();
+
+const loadFavoritesFromCookies = async () => {
+  const favoritesStr = cookies.get('favorites');
+  if (favoritesStr) {
+    const favorites = JSON.parse(favoritesStr);
+    items.value.forEach(item => {
+      if (favorites.some(fav => fav.parentId === item.id)) {
+        item.isFavorite = true;
+      }
+    });
+  }
+};
+
+const loadCartFromCookies = async () => {
+  const cartStr = cookies.get('cart');
+  if (cartStr) {
+    const cart = JSON.parse(cartStr);
+    items.value.forEach(item => {
+      if (cart.some(fav => fav.parentId === item.id)) {
+        item.isAdded = true;
+      }
+    });
+  }
+};
+
+const addToFavorite = async (item) => {
+  try {
+    if (!item.isFavorite) {
+      // Get the current 'favorites' cookie value
+      const favoritesStr = cookies.get('favorites');
+      let favorites = [];
+
+      // If the cookie exists, parse the existing favorites
+      if (favoritesStr) {
+        favorites = JSON.parse(favoritesStr);
+      }
+
+      // Add the new item to the favorites array
+      favorites.push({ parentId: item.id });
+
+      // Update the 'favorites' cookie with the new array
+      cookies.set('favorites', JSON.stringify(favorites));
+      item.isFavorite = true;
+    } else {
+      const favoritesStr = cookies.get('favorites');
+      if (favoritesStr) {
+        const favorites = JSON.parse(favoritesStr);
+
+        const index = favorites.findIndex(fav => fav.parentId === item.id);
+
+        if (index !== -1) {
+          favorites.splice(index, 1);
+          cookies.set('favorites', JSON.stringify(favorites));
+          item.isFavorite = false;
+        }
+      }
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+const basket = ref([]);
+
+const addItemToCart = async (item) => {
+  const cartStr = cookies.get('cart');
+  let cart = cartStr ? JSON.parse(cartStr) : [];
+  if (!cart.some(cartItem => cartItem.id === item.id)) {
+    cart.push({
+      id: item.id,
+      title: item.title,
+      price: item.price,
+      imageUrl: item.imageUrl
+    });
+    cookies.set('cart', JSON.stringify(cart));
+    basket.value.push(item);
+    item.isAdded = true;
+  }
+};
+
+const removeItemFromCart = async (item) => {
+  const cartStr = cookies.get('cart');
+  if (cartStr) {
+    let cart = JSON.parse(cartStr);
+    cart = cart.filter(cartItem => cartItem.id !== item.id);
+    cookies.set('cart', JSON.stringify(cart));
+    basket.value = basket.value.filter(basketItem => basketItem.id !== item.id);
+    item.isAdded = false;
+  }
+};
+
+
+const updateCart = async (item) => {
+  try {
+    if (!item.isAdded) {
+      await addItemToCart(item);
+    } else {
+      await removeItemFromCart(item);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+onMounted(() => {
+  loadFavoritesFromCookies();
+  loadCartFromCookies();
+});
+
+provide('cartActions', {
+  basket,
+  removeItemFromCart,
+  closeDrawer,
+  openDrawer
+});
+</script>

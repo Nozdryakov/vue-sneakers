@@ -19,7 +19,8 @@
 </template>
 
 <script setup>
-defineProps({
+const props =  defineProps({
+  id: Number,
   imageUrl: String,
   title: String,
   price: Number,

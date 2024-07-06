@@ -6,18 +6,21 @@
         :image-url="item.imageUrl"
         :title="item.title"
         :price="item.price"
-        :is-favorite="true"
-        :on-click-add="onClickAdd"
+        :is-favorite="item.isFavorite"
+        :is-added="item.isAdded"
+        @click-add="() => emit('updateCart', item)"
+        @click-favorite="() => emit('addToFavorite', item)"
     ></card>
   </div>
 </template>
+
 <script setup>
+import { defineProps, defineEmits } from 'vue';
 import Card from "@/components/Card.vue";
 
 defineProps({
   items: Array
-})
-const onClickAdd = () => {
-    alert('add');
-}
+});
+
+const emit = defineEmits(['updateCart', 'addToFavorite']);
 </script>
