@@ -1,7 +1,7 @@
 <template>
-  <drawer v-if="cartOpen"></drawer>
+  <drawer v-if="cartOpen" :total-cost="totalCost" :vat-price="vatPrice" @create-order="createOrder"></drawer>
   <div class="bg-white w-4/5 m-auto rounded-xl shadow-xl mt-14">
-    <Header @openDrawer="openDrawer"></Header>
+    <Header :total-cost="totalCost" @openDrawer="openDrawer"></Header>
 
     <div class="p-10">
       <div class="flex justify-between items-center">
@@ -29,13 +29,19 @@
 </template>
 
 <script setup>
-import {ref, computed, provide, onMounted, watchEffect, watch} from 'vue';
+import {ref, computed, provide, onMounted } from 'vue';
 import Header from "@/components/Header.vue";
 import CardList from "@/components/CardList.vue";
 import { useCookies } from "vue3-cookies";
 import Drawer from "@/components/Drawer.vue";
 
 const cartOpen = ref(false);
+const basket = ref([]);
+const totalCost = computed(
+    ()=> basket.value.reduce((acc, item) => acc + item.price, 0)
+);
+const vatPrice = computed(
+    ()=> Math.round((totalCost.value * 5 ) / 100));
 const closeDrawer = () => {
   cartOpen.value = false;
 }
@@ -183,7 +189,7 @@ const loadCartFromCookies = async () => {
   if (cartStr) {
     const cart = JSON.parse(cartStr);
     items.value.forEach(item => {
-      if (cart.some(fav => fav.parentId === item.id)) {
+      if (cart.some(obj => obj.id === item.id)) {
         item.isAdded = true;
       }
     });
@@ -226,7 +232,7 @@ const addToFavorite = async (item) => {
     console.log(err);
   }
 };
-const basket = ref([]);
+
 
 const addItemToCart = async (item) => {
   const cartStr = cookies.get('cart');
@@ -267,6 +273,33 @@ const updateCart = async (item) => {
     console.log(err);
   }
 };
+const createOrder = async () => {
+  try {
+    const newOrder = {
+      items: basket.value,
+      totalCost: totalCost.value,
+      vatPrice: vatPrice.value,
+      date: new Date().toISOString()
+    };
+
+    const ordersStr = cookies.get('orders');
+    let orders = ordersStr ? JSON.parse(ordersStr) : [];
+
+    orders.push(newOrder);
+
+    cookies.set('orders', JSON.stringify(orders));
+
+    basket.value = [];
+    cookies.set('cart', JSON.stringify(basket.value));
+    items.value.forEach(item => {
+      item.isAdded = false;
+    })
+    closeDrawer();
+  } catch (error) {
+    console.error('Ошибка при создании заказа:', error);
+  }
+};
+
 onMounted(() => {
   loadFavoritesFromCookies();
   loadCartFromCookies();
