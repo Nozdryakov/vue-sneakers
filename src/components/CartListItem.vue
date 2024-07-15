@@ -1,5 +1,5 @@
 <template>
- <div class="flex flex-col gap-4">
+ <div v-auto-animate class="flex flex-col gap-4">
   <cart-item v-for="item in basket"
     :key="item.id"
     :title="item.title"
@@ -16,6 +16,7 @@
 import CartItem from "@/components/CartItem.vue";
 import {inject} from "vue";
 
-const  { basket, removeItemFromCart } = inject('cartActions');
+const  { basket } = inject('cartActions');
+const { removeItemFromCart } = inject('CartHomeActions');
 console.log(basket.value);
 </script>
