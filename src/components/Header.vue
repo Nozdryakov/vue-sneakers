@@ -14,10 +14,12 @@
         <img src="/cart.svg" alt="cart"/>
         <b>{{totalCost}} грн.</b>
       </li>
-      <li class="flex items-center gap-3 text-gray-500 hover:text-black cursor-pointer">
-        <img src="/heart.svg" alt="heart"/>
-        <span>Закладки</span>
-      </li>
+      <router-link to="/favorites">
+        <li class="flex items-center gap-3 text-gray-500 hover:text-black cursor-pointer">
+          <img src="/heart.svg" alt="heart"/>
+          <span>Закладки</span>
+        </li>
+      </router-link>
       <li class="flex items-center gap-3 text-gray-500 hover:text-black cursor-pointer">
         <img src="/profile.svg" alt="profile"/>
         <span>Профиль</span>

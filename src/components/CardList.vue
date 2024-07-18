@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import {defineProps, defineEmits, inject} from 'vue';
 import Card from "@/components/Card.vue";
 
 defineProps({

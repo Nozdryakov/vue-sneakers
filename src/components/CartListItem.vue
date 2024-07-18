@@ -17,5 +17,4 @@ import CartItem from "@/components/CartItem.vue";
 import {inject} from "vue";
 
 const  { basket, removeItemFromCart } = inject('cartActions');
-console.log(basket.value);
 </script>

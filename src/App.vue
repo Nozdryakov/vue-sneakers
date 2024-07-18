@@ -1,47 +1,19 @@
 <template>
-  <drawer v-if="cartOpen" :total-cost="totalCost" :vat-price="vatPrice" @create-order="createOrder"></drawer>
-  <div class="bg-white w-4/5 m-auto rounded-xl shadow-xl mt-14">
-    <Header :total-cost="totalCost" @openDrawer="openDrawer"></Header>
-
-    <div class="p-10">
-      <div class="flex justify-between items-center">
-        <h2 class="text-3xl font-bold mb-8">Все кроссовки</h2>
-
-        <select class="py-2 px-3 border rounded-md outline-none" @change="sortItems($event)">
-          <option value="title">По названию</option>
-          <option value="priceAsc">По цене (от дешевых)</option>
-          <option value="priceDesc">По цене (от дорогих)</option>
-        </select>
-
-        <div class="relative">
-          <img class="absolute left-4 top-3" src="/search.svg" />
-          <input
-              v-model="searchQuery"
-              placeholder="Поиск..." class="border rounded-md py-2 pl-11 pr-4 outline-none focus:border-gray-400" />
-        </div>
-      </div>
-
-      <div class="mt-10">
-        <card-list :items="filteredItems" @updateCart="updateCart"  @addToFavorite="addToFavorite"></card-list>
-      </div>
-    </div>
-  </div>
+  <router-view></router-view>
 </template>
 
 <script setup>
-import {ref, computed, provide, onMounted } from 'vue';
-import Header from "@/components/Header.vue";
-import CardList from "@/components/CardList.vue";
-import { useCookies } from "vue3-cookies";
-import Drawer from "@/components/Drawer.vue";
+import {provide, ref, computed, onMounted} from 'vue';
+import { useCookies } from 'vue3-cookies';
 
 const cartOpen = ref(false);
 const basket = ref([]);
-const totalCost = computed(
-    ()=> basket.value.reduce((acc, item) => acc + item.price, 0)
-);
-const vatPrice = computed(
-    ()=> Math.round((totalCost.value * 5 ) / 100));
+const totalCost = ref(0);
+const updateTotalCost = () => {
+  totalCost.value = basket.value.reduce((acc, item) => acc + item.price, 0);
+  cookies.set('totalCost', JSON.stringify(totalCost.value));
+};
+const vatPrice = computed(() => Math.round((totalCost.value * 5) / 100));
 const closeDrawer = () => {
   cartOpen.value = false;
 }
@@ -49,6 +21,9 @@ const openDrawer = () => {
   cartOpen.value = true;
   console.log(cartOpen.value);
 }
+
+const { cookies } = useCookies();
+
 const items = ref([
   {
     id: 1,
@@ -148,70 +123,27 @@ const items = ref([
   }
 ]);
 
-const sortKey = ref('title');
-const searchQuery = ref('');
-const sortedItems = computed(() => {
-  let sorted = [...items.value];
-  if (sortKey.value === 'title') {
-    sorted.sort((a, b) => a.title.localeCompare(b.title));
-  } else if (sortKey.value === 'priceAsc') {
-    sorted.sort((a, b) => a.price - b.price);
-  } else if (sortKey.value === 'priceDesc') {
-    sorted.sort((a, b) => b.price - a.price);
+onMounted( ()=> {
+  const totalCostStr = cookies.get('totalCost');
+  if (totalCostStr) {
+    totalCost.value = parseFloat(totalCostStr);
   }
-  return sorted;
 });
-
-const filteredItems = computed(() => {
-  return sortedItems.value.filter(item => item.title.toLowerCase().includes(searchQuery.value.toLowerCase()));
-});
-
-const sortItems = (event) => {
-  sortKey.value = event.target.value;
-};
-
-const { cookies } = useCookies();
-
-const loadFavoritesFromCookies = async () => {
-  const favoritesStr = cookies.get('favorites');
-  if (favoritesStr) {
-    const favorites = JSON.parse(favoritesStr);
-    items.value.forEach(item => {
-      if (favorites.some(fav => fav.parentId === item.id)) {
-        item.isFavorite = true;
-      }
-    });
-  }
-};
-
-const loadCartFromCookies = async () => {
-  const cartStr = cookies.get('cart');
-  if (cartStr) {
-    const cart = JSON.parse(cartStr);
-    items.value.forEach(item => {
-      if (cart.some(obj => obj.id === item.id)) {
-        item.isAdded = true;
-      }
-    });
-  }
-};
 
 const addToFavorite = async (item) => {
   try {
     if (!item.isFavorite) {
-      // Get the current 'favorites' cookie value
       const favoritesStr = cookies.get('favorites');
       let favorites = [];
-
-      // If the cookie exists, parse the existing favorites
       if (favoritesStr) {
         favorites = JSON.parse(favoritesStr);
       }
-
-      // Add the new item to the favorites array
-      favorites.push({ parentId: item.id });
-
-      // Update the 'favorites' cookie with the new array
+      favorites.push({
+        FavId: item.id,
+        title: item.title,
+        price: item.price,
+        imageUrl: item.imageUrl
+      });
       cookies.set('favorites', JSON.stringify(favorites));
       item.isFavorite = true;
     } else {
@@ -233,7 +165,6 @@ const addToFavorite = async (item) => {
   }
 };
 
-
 const addItemToCart = async (item) => {
   const cartStr = cookies.get('cart');
   let cart = cartStr ? JSON.parse(cartStr) : [];
@@ -246,21 +177,19 @@ const addItemToCart = async (item) => {
     });
     cookies.set('cart', JSON.stringify(cart));
     basket.value.push(item);
+    updateTotalCost();
     item.isAdded = true;
   }
 };
 
 const removeItemFromCart = async (item) => {
-  const cartStr = cookies.get('cart');
-  if (cartStr) {
-    let cart = JSON.parse(cartStr);
-    cart = cart.filter(cartItem => cartItem.id !== item.id);
-    cookies.set('cart', JSON.stringify(cart));
-    basket.value = basket.value.filter(basketItem => basketItem.id !== item.id);
-    item.isAdded = false;
-  }
+  let cart = JSON.parse(cookies.get('cart'));
+  cart = cart.filter(cartItem => cartItem.id !== item.id);
+  cookies.set('cart', JSON.stringify(cart));
+  basket.value = basket.value.filter(basketItem => basketItem.id !== item.id);
+  item.isAdded = false;
+  updateTotalCost();
 };
-
 
 const updateCart = async (item) => {
   try {
@@ -300,15 +229,21 @@ const createOrder = async () => {
   }
 };
 
-onMounted(() => {
-  loadFavoritesFromCookies();
-  loadCartFromCookies();
-});
 
-provide('cartActions', {
+
+const cartActions = {
   basket,
-  removeItemFromCart,
+  totalCost,
+  vatPrice,
+  cartOpen,
   closeDrawer,
-  openDrawer
-});
+  openDrawer,
+  addToFavorite,
+  updateCart,
+  createOrder,
+  removeItemFromCart,
+  updateTotalCost
+};
+
+provide('cartActions', cartActions);
 </script>
