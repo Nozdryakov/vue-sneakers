@@ -4,7 +4,7 @@
     <Header :total-cost="totalCost" @openDrawer="openDrawer"></Header>
 
     <div class="p-10">
-      <div class="flex justify-between items-center">
+      <div class="flex justify-between items-center flex-wrap">
         <h2 class="text-3xl font-bold mb-8">Все кроссовки</h2>
 
         <select class="py-2 px-3 border rounded-md outline-none" @change="sortItems($event)">
@@ -172,7 +172,7 @@ const loadFavoritesFromCookies = async () => {
   if (favoritesStr) {
     const favorites = JSON.parse(favoritesStr);
     items.value.forEach(item => {
-      if (favorites.some(fav => fav.parentId === item.id)) {
+      if (favorites.some(fav => fav.id === item.id)) {
         item.isFavorite = true;
       }
     });

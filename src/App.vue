@@ -139,10 +139,11 @@ const addToFavorite = async (item) => {
         favorites = JSON.parse(favoritesStr);
       }
       favorites.push({
-        FavId: item.id,
+        id: item.id,
         title: item.title,
         price: item.price,
-        imageUrl: item.imageUrl
+        imageUrl: item.imageUrl,
+        isFavorite: true,
       });
       cookies.set('favorites', JSON.stringify(favorites));
       item.isFavorite = true;
@@ -151,7 +152,7 @@ const addToFavorite = async (item) => {
       if (favoritesStr) {
         const favorites = JSON.parse(favoritesStr);
 
-        const index = favorites.findIndex(fav => fav.parentId === item.id);
+        const index = favorites.findIndex(fav => fav.id === item.id);
 
         if (index !== -1) {
           favorites.splice(index, 1);
@@ -191,6 +192,7 @@ const removeItemFromCart = async (item) => {
   updateTotalCost();
 };
 
+
 const updateCart = async (item) => {
   try {
     if (!item.isAdded) {
@@ -223,7 +225,8 @@ const createOrder = async () => {
     items.value.forEach(item => {
       item.isAdded = false;
     })
-    closeDrawer();
+    cookies.set('totalCost', JSON.stringify(0));
+    updateTotalCost();
   } catch (error) {
     console.error('Ошибка при создании заказа:', error);
   }

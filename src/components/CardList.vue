@@ -1,5 +1,5 @@
 <template>
-  <div v-auto-animate class="grid grid-cols-4 gap-5">
+  <div v-auto-animate class="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
     <card
         v-for="item in items"
         :key="item.id"
@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-import {defineProps, defineEmits, inject} from 'vue';
+import { defineProps, defineEmits } from 'vue';
 import Card from "@/components/Card.vue";
 
 defineProps({
