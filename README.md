@@ -1,35 +1,24 @@
-# vue-sneakers
+# vue-sneakers 👟👟👟
+Проект написанный на Vue(некоммерческий). Интернет магазин кроссовок.  
 
-This template should help get you started developing with Vue 3 in Vite.
-
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
+## Установка
+```bash
 npm run dev
 ```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
+или
+```bash
+npm run dev -- --host
 ```
+## Технологии, которые использовались:
+- Vue 3
+- Vue Router
+- TailwindCSS
+- vue3-cookies
+- @formkit/auto-animate
+- Composition API / Options API
+- ESLint
+- Prettier
 
-### Lint with [ESLint](https://eslint.org/)
+### Связь с автором:
 
-```sh
-npm run lint
-```
+nozdryakovtema0603@gmail.com
